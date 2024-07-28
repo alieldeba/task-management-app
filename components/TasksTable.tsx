@@ -92,11 +92,9 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                 <TableRow>
                                     <TableHead>Task</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead className="text-center">
-                                        Created at
-                                    </TableHead>
+                                    <TableHead>Created at</TableHead>
                                     <TableHead className="table-cell">
-                                        Deadline
+                                        Due date
                                     </TableHead>
                                     <TableHead>
                                         <span className="sr-only">Actions</span>
@@ -122,11 +120,17 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                                     {task.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="table-cell text-center">
-                                                {task.createdDate}
+                                            <TableCell className="table-cell">
+                                                {format(
+                                                    task.createdDate,
+                                                    "dd-MM-yyyy"
+                                                )}
                                             </TableCell>
                                             <TableCell className="table-cell">
-                                                {task.deadline}
+                                                {format(
+                                                    task.deadline,
+                                                    "dd-MM-yyyy"
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
@@ -227,7 +231,7 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                     </div>
                     <div className="w-full flex items-center justify-between gap-2">
                         <Label htmlFor="deadline" className="text-right">
-                            Deadline
+                            Due date
                         </Label>
                         <Popover>
                             <PopoverTrigger asChild>

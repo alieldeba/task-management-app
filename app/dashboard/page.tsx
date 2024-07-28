@@ -163,7 +163,7 @@ export default function Dashboard() {
                                                     htmlFor="deadline"
                                                     className="text-right"
                                                 >
-                                                    Dead Line
+                                                    Due date
                                                 </Label>
                                                 <Popover>
                                                     <PopoverTrigger asChild>

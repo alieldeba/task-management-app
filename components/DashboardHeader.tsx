@@ -1,6 +1,6 @@
 "use client";
 
-import {  Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -25,6 +25,16 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
 
 function DashboardHeader() {
     return (
@@ -38,30 +48,59 @@ function DashboardHeader() {
                 />
             </div>
             <AlertDialog>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="overflow-hidden rounded-full"
-                        >
-                            <Avatar>
-                                <AvatarImage src="https://github.com/shadcn.png" />
-                                <AvatarFallback>CN</AvatarFallback>
-                            </Avatar>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
-                        <DropdownMenuItem>Support</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <AlertDialogTrigger className="w-full">
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
-                        </AlertDialogTrigger>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <Dialog>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="overflow-hidden rounded-full"
+                            >
+                                <Avatar>
+                                    <AvatarImage src="https://github.com/shadcn.png" />
+                                    <AvatarFallback>CN</AvatarFallback>
+                                </Avatar>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>alieldeba</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DialogTrigger>
+                                <DropdownMenuItem>
+                                    Profile Settings
+                                </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DropdownMenuSeparator />
+                            <AlertDialogTrigger className="w-full">
+                                <DropdownMenuItem>Logout</DropdownMenuItem>
+                            </AlertDialogTrigger>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Edit profile</DialogTitle>
+                            <DialogDescription>
+                                Enter your Linkedin URL to fetch your data right
+                                away to the website.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="flex flex-col items-start gap-2">
+                                <Label htmlFor="url" className="text-right">
+                                    Linkedin URL
+                                </Label>
+                                <Input
+                                    id="url"
+                                    placeholder="https://linkedin.com/in/username"
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit">Save changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
