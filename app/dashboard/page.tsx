@@ -30,7 +30,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { tasks } from "@/data/tasks";

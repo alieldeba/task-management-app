@@ -15,7 +15,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -54,7 +53,6 @@ import {
 } from "@/components/ui/select";
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -76,6 +74,7 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
         Working: "bg-orange-600",
         Done: "bg-green-600",
     };
+
     return (
         <Dialog>
             <AlertDialog>
@@ -128,7 +127,7 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                             </TableCell>
                                             <TableCell className="table-cell">
                                                 {format(
-                                                    task.deadline,
+                                                    task.dueDate,
                                                     "dd-MM-yyyy"
                                                 )}
                                             </TableCell>
