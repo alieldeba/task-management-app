@@ -189,7 +189,7 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Continue</AlertDialogAction>
+                        <Button variant="destructive">Delete</Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

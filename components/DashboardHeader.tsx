@@ -36,7 +36,13 @@ import {
 } from "./ui/dialog";
 import { Label } from "./ui/label";
 
-function DashboardHeader() {
+function DashboardHeader({
+    search,
+    setSearch,
+}: {
+    search: string;
+    setSearch: (value: string) => void;
+}) {
     return (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <div className="relative ml-auto flex-1 md:grow-0">
@@ -45,6 +51,10 @@ function DashboardHeader() {
                     type="search"
                     placeholder="Search specific task..."
                     className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
+                    value={search}
+                    onChange={(e: any) =>
+                        setSearch(e.target.value.toLocaleLowerCase())
+                    }
                 />
             </div>
             <AlertDialog>
@@ -112,7 +122,7 @@ function DashboardHeader() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Continue</AlertDialogAction>
+                        <Button variant="destructive">Logout</Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

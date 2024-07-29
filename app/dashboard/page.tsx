@@ -40,11 +40,12 @@ import DashboardHeader from "@/components/DashboardHeader";
 export default function Dashboard() {
     const [date, setDate] = React.useState<Date | undefined>(new Date());
     const todoStatuses = ["Todo", "Working", "Done"];
+    const [search, setSearch] = React.useState<string>("");
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-muted/40">
             <div className="flex flex-col sm:gap-4 sm:py-4">
-                <DashboardHeader />
+                <DashboardHeader search={search} setSearch={setSearch} />
                 <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                     <Tabs
                         defaultValue="all"
@@ -89,11 +90,20 @@ export default function Dashboard() {
                                         </DropdownMenuCheckboxItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu> */}
+                                <Button
+                                    size="sm"
+                                    className="h-7 gap-1"
+                                    variant="outline"
+                                >
+                                    <PlusCircle className="h-3.5 w-3.5" />
+                                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                                        Add Category
+                                    </span>
+                                </Button>
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <Button size="sm" className="h-7 gap-1">
                                             <PlusCircle className="h-3.5 w-3.5" />
-
                                             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                                                 Add Task
                                             </span>
@@ -218,26 +228,42 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <TabsContent value="all">
-                            <TasksTable tasks={tasks} />
+                            <TasksTable
+                                tasks={tasks.filter((task) =>
+                                    task.name
+                                        .toLocaleLowerCase()
+                                        .includes(search)
+                                )}
+                            />
                         </TabsContent>
                         <TabsContent value="todo">
                             <TasksTable
                                 tasks={tasks.filter(
-                                    (task) => task.status === "Todo"
+                                    (task) =>
+                                        task.status === "Todo" &&
+                                        task.name
+                                            .toLocaleLowerCase()
+                                            .includes(search)
                                 )}
                             />
                         </TabsContent>
                         <TabsContent value="working">
                             <TasksTable
                                 tasks={tasks.filter(
-                                    (task) => task.status === "Working"
+                                    (task) =>
+                                        task.status === "Working" &&
+                                        task.name.toLowerCase().includes(search)
                                 )}
                             />
                         </TabsContent>
                         <TabsContent value="done">
                             <TasksTable
                                 tasks={tasks.filter(
-                                    (task) => task.status === "Done"
+                                    (task) =>
+                                        task.status === "Done" &&
+                                        task.name
+                                            .toLocaleLowerCase()
+                                            .includes(search)
                                 )}
                             />
                         </TabsContent>
