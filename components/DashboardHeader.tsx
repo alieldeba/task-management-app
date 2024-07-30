@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import React from "react";
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -35,6 +34,9 @@ import {
     DialogTrigger,
 } from "./ui/dialog";
 import { Label } from "./ui/label";
+import Cookies from "universal-cookie";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 function DashboardHeader({
     search,
@@ -43,6 +45,15 @@ function DashboardHeader({
     search: string;
     setSearch: (value: string) => void;
 }) {
+    const router = useRouter();
+    const cookie = new Cookies();
+
+    function logout() {
+        cookie.remove("token");
+        toast("You have been logged out successfully");
+        router.replace("/");
+    }
+
     return (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <div className="relative ml-auto flex-1 md:grow-0">
@@ -122,7 +133,9 @@ function DashboardHeader({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <Button variant="destructive">Logout</Button>
+                        <Button variant="destructive" onClick={() => logout()}>
+                            Logout
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
