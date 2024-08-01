@@ -65,7 +65,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { TaskColors, Task } from "@/types";
+import { TaskColors, Task, Category } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "universal-cookie";
@@ -95,16 +95,15 @@ function TasksTable({
         Done: "bg-green-600",
     };
 
-    const [filteredTasks, setFilteredTasks] = React.useState(tasks);
-
-    console.log(taskCategories);
+    const [filteredTasks, setFilteredTasks] = React.useState<Task[]>(tasks);
 
     React.useEffect(() => {
         // Implement filter tasks by category
         if (filter) {
             const filteredTasks: Task[] = tasks.filter((task) =>
                 task.categories
-                    ?.map((category: any) => category._id)
+                    ?.filter((category) => typeof category !== "string") // Ensure category is an object
+                    .map((category) => category._id)
                     ?.includes(filter)
             );
 
@@ -118,7 +117,11 @@ function TasksTable({
         // Implement update task categories
         if (currentTask) {
             setTaskCategories(
-                currentTask.categories.map((category) => category._id)
+                currentTask.categories
+                    .filter(
+                        (category: Category) => typeof category !== "string"
+                    ) // Ensure category is an object
+                    .map((category: Category) => category._id)
             );
         }
     }, [currentTask]);
@@ -227,7 +230,10 @@ function TasksTable({
                                             </TableCell>
                                             <TableCell className="font-medium min-w-[150px]">
                                                 {task?.categories?.map(
-                                                    (category: any, idx) => (
+                                                    (
+                                                        category: any,
+                                                        idx: number
+                                                    ) => (
                                                         <Badge
                                                             variant="outline"
                                                             key={idx}
@@ -253,7 +259,7 @@ function TasksTable({
                                             </TableCell>
                                             <TableCell className="table-cell min-w-[150px]">
                                                 {format(
-                                                    task.createdAt,
+                                                    task.createdAt!,
                                                     "dd-MM-yyyy"
                                                 )}
                                             </TableCell>
@@ -391,7 +397,7 @@ function TasksTable({
                         </Label>
                         <div className="flex gap-2 flex-wrap">
                             {categories?.data?.map(
-                                (category: any, idx: number) => (
+                                (category: Category, idx: number) => (
                                     <div
                                         key={idx}
                                         className="flex gap-1 items-center"
@@ -400,7 +406,7 @@ function TasksTable({
                                             id={category.name}
                                             defaultChecked={currentTask?.categories
                                                 .map(
-                                                    (category: any) =>
+                                                    (category: Category) =>
                                                         category._id
                                                 )
                                                 .includes(category._id)}
@@ -415,7 +421,7 @@ function TasksTable({
                                                     // User unchecked the category
                                                     setTaskCategories(
                                                         taskCategories.filter(
-                                                            (cat) =>
+                                                            (cat: string) =>
                                                                 cat !==
                                                                 category._id
                                                         )

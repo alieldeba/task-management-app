@@ -39,7 +39,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { useMutation } from "@tanstack/react-query";
-import { setUser } from "@/app/GlobalRedux/Features/user/userSlice";
+import { clearUser, setUser } from "@/app/GlobalRedux/Features/user/userSlice";
 import axios from "axios";
 import { User, UserData } from "@/types";
 
@@ -64,6 +64,7 @@ function DashboardHeader({
 
     function logout() {
         cookie.remove("token");
+        dispatch(clearUser());
         toast.success("You have been logged out successfully");
         router.replace("/");
     }

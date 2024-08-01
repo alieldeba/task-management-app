@@ -52,9 +52,6 @@ export default function Login() {
 
                     // Saving user to global state
                     dispatch(setUser(res.data.user));
-                    // dispatch(setUserUsername(res.data.username));
-                    // dispatch(setUserEmail(res.data.email));
-                    // dispatch(setUserLinkedinURL(res.data.linkedinURL));
 
                     // Redirect to dashboard
                     router.replace("/dashboard");

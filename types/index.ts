@@ -3,11 +3,11 @@ export type Task = {
     name: string;
     description: string;
     status: string;
-    dueDate: string;
+    dueDate: Date;
     userId?: string;
-    categories?: string[];
-    createdAt: string;
-    updatedAt?: string;
+    categories?: string[] | { _id: string; name: string }[];
+    createdAt?: Date;
+    updatedAt?: Date;
 };
 
 export type TaskColors = {
@@ -23,6 +23,7 @@ export type User = {
     linkedinURL: string;
     tasks?: string[];
     categories?: string[];
+    password: string;
     createdAt: string;
     updatedAt: string;
 };

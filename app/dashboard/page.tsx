@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarIcon, ListFilter, PlusCircle } from "lucide-react";
+import { CalendarIcon, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -38,7 +38,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import { Task } from "@/types";
+import { Category, Task } from "@/types";
 import Cookies from "universal-cookie";
 import { useSelector } from "react-redux";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -47,10 +47,10 @@ export default function Dashboard() {
     const user = useSelector((state: any) => state.user.user);
 
     const todoStatuses = ["Todo", "Working", "Done"];
-    const [date, setDate] = React.useState<Date | undefined>(new Date());
+    const [date, setDate] = React.useState<Date>(new Date());
     const [search, setSearch] = React.useState<string>("");
     const [categoryName, setCategoryName] = React.useState<string>("");
-    const [taskData, setTaskData] = React.useState<any>({
+    const [taskData, setTaskData] = React.useState<Task>({
         status: "Todo",
         description: "",
         name: "",
@@ -84,7 +84,7 @@ export default function Dashboard() {
         },
     });
 
-    const categories = useQuery<any>({
+    const categories = useQuery<Category[]>({
         queryKey: ["categories", "user", user._id],
         queryFn: async () => {
             try {
@@ -211,12 +211,12 @@ export default function Dashboard() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="filter">
-                                            Filter By Category
+                                            No Filter
                                         </SelectItem>
                                         {categories?.data?.map(
-                                            (category: any) => (
+                                            (category: Category) => (
                                                 <SelectItem
-                                                    value={category._id}
+                                                    value={category._id!}
                                                     key={category._id}
                                                 >
                                                     {category.name}
@@ -353,7 +353,7 @@ export default function Dashboard() {
                                                 <div className="flex gap-2 flex-wrap">
                                                     {categories?.data?.map(
                                                         (
-                                                            category: any,
+                                                            category: Category,
                                                             idx: number
                                                         ) => (
                                                             <div
@@ -485,11 +485,11 @@ export default function Dashboard() {
                                                             onSelect={(
                                                                 value
                                                             ) => {
-                                                                setDate(value);
+                                                                setDate(value!);
                                                                 setTaskData({
                                                                     ...taskData,
                                                                     dueDate:
-                                                                        value,
+                                                                        value!,
                                                                 });
                                                             }}
                                                             initialFocus
