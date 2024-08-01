@@ -43,3 +43,9 @@ To start the development server, use the following command:
 ```bash
 npm run dev
 ```
+
+now you can see the website at https://localhost:3000
+
+4. Run the backend server:
+
+You can run the backend project from here: https://github.com/alieldeba/task-management-app-backend
