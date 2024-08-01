@@ -37,6 +37,11 @@ import { Label } from "./ui/label";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { useMutation } from "@tanstack/react-query";
+import { setUser } from "@/app/GlobalRedux/Features/user/userSlice";
+import axios from "axios";
+import { User, UserData } from "@/types";
 
 function DashboardHeader({
     search,
@@ -47,12 +52,48 @@ function DashboardHeader({
 }) {
     const router = useRouter();
     const cookie = new Cookies();
+    const dispatch = useDispatch();
+
+    const user: User = useSelector((state: any) => state.user.user);
+
+    const [userData, setUserData] = React.useState<UserData>({
+        username: user.username,
+        email: user.email,
+        linkedinURL: user.linkedinURL,
+    });
 
     function logout() {
         cookie.remove("token");
-        toast("You have been logged out successfully");
+        toast.success("You have been logged out successfully");
         router.replace("/");
     }
+
+    const { mutate: updateUser } = useMutation({
+        mutationFn: async () => {
+            try {
+                const response = await axios.put(
+                    `http://localhost:8000/users/${user._id}`,
+                    userData,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${cookie.get("token")}`,
+                        },
+                    }
+                );
+
+                // Saving user to global state
+                dispatch(setUser(response.data));
+
+                toast.success("Profile updated successfully.");
+            } catch (err) {
+                toast.error(
+                    "Something went wrong while updating your profile."
+                );
+                console.error(err);
+            }
+        },
+    });
 
     return (
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -78,13 +119,18 @@ function DashboardHeader({
                                 className="overflow-hidden rounded-full"
                             >
                                 <Avatar>
-                                    <AvatarImage src="https://github.com/shadcn.png" />
-                                    <AvatarFallback>CN</AvatarFallback>
+                                    <AvatarImage src="https://github.com/alieldeba.png" />
+                                    <AvatarFallback>
+                                        {user.username[0].toUpperCase()}
+                                        {user.username[1].toUpperCase()}
+                                    </AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>alieldeba</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {user.username}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DialogTrigger>
                                 <DropdownMenuItem>
@@ -107,18 +153,67 @@ function DashboardHeader({
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="flex flex-col items-start gap-2">
-                                <Label htmlFor="url" className="text-right">
+                                <Label
+                                    htmlFor="username"
+                                    className="text-right"
+                                >
+                                    Username
+                                </Label>
+                                <Input
+                                    id="username"
+                                    placeholder="John"
+                                    className="col-span-3"
+                                    value={userData.username}
+                                    onChange={(e) =>
+                                        setUserData({
+                                            ...userData,
+                                            username: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="flex flex-col items-start gap-2">
+                                <Label htmlFor="email" className="text-right">
+                                    Email
+                                </Label>
+                                <Input
+                                    id="email"
+                                    placeholder="user@example.com"
+                                    className="col-span-3"
+                                    value={userData.email}
+                                    onChange={(e) =>
+                                        setUserData({
+                                            ...userData,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="flex flex-col items-start gap-2">
+                                <Label
+                                    htmlFor="linkedin-url"
+                                    className="text-right"
+                                >
                                     Linkedin URL
                                 </Label>
                                 <Input
-                                    id="url"
+                                    id="linkedin-url"
                                     placeholder="https://linkedin.com/in/username"
                                     className="col-span-3"
+                                    value={userData.linkedinURL}
+                                    onChange={(e) =>
+                                        setUserData({
+                                            ...userData,
+                                            linkedinURL: e.target.value,
+                                        })
+                                    }
                                 />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Save changes</Button>
+                            <Button onClick={() => updateUser()}>
+                                Save changes
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

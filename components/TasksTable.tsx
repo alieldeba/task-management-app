@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/table";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -53,6 +54,7 @@ import {
 } from "@/components/ui/select";
 import {
     AlertDialog,
+    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -63,17 +65,130 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { TaskColors, TaskType } from "@/types";
+import { TaskColors, Task } from "@/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Cookies from "universal-cookie";
+import { toast } from "sonner";
+import { Checkbox } from "./ui/checkbox";
+import { useSelector } from "react-redux";
 
-function TasksTable({ tasks }: { tasks: TaskType[] }) {
-    const [date, setDate] = React.useState<Date | undefined>(new Date());
+function TasksTable({
+    tasks,
+    filter,
+    refetchTasks,
+}: {
+    tasks: Task[];
+    filter: string;
+    refetchTasks: () => void;
+}) {
     const todoStatuses = ["Todo", "Working", "Done"];
+    const cookies = new Cookies();
+    const user = useSelector((state: any) => state.user.user);
+    const [currentTask, setCurrentTask] = React.useState<any>();
+
+    const [taskCategories, setTaskCategories] = React.useState<string[]>([]);
 
     const taskColors: TaskColors = {
         Todo: "bg-blue-600",
         Working: "bg-orange-600",
         Done: "bg-green-600",
     };
+
+    const [filteredTasks, setFilteredTasks] = React.useState(tasks);
+
+    console.log(taskCategories);
+
+    React.useEffect(() => {
+        // Implement filter tasks by category
+        if (filter) {
+            const filteredTasks: Task[] = tasks.filter((task) =>
+                task.categories
+                    ?.map((category: any) => category._id)
+                    ?.includes(filter)
+            );
+
+            setFilteredTasks(filteredTasks);
+        } else {
+            setFilteredTasks(tasks);
+        }
+    }, [filter, tasks]);
+
+    React.useEffect(() => {
+        // Implement update task categories
+        if (currentTask) {
+            setTaskCategories(
+                currentTask.categories.map((category) => category._id)
+            );
+        }
+    }, [currentTask]);
+
+    const categories = useQuery<any>({
+        queryKey: ["categories", "user", user._id],
+        queryFn: async () => {
+            try {
+                const response = await axios.get(
+                    `http://localhost:8000/categories/user/${user._id}`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${cookies.get("token")}`,
+                        },
+                    }
+                );
+                return response.data;
+            } catch (err) {
+                toast.error(
+                    "Something went wrong while fetching your categories."
+                );
+                console.log(err);
+            }
+        },
+    });
+
+    const { mutate: deleteTask } = useMutation({
+        mutationFn: async () => {
+            try {
+                await axios.delete(
+                    `http://localhost:8000/tasks/${currentTask?._id}`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${cookies.get("token")}`,
+                        },
+                    }
+                );
+                toast.success("Task deleted successfully.");
+                refetchTasks();
+            } catch (err) {
+                toast.error("Something went wrong while deleting your tasks.");
+                console.log(err);
+            }
+        },
+    });
+
+    const { mutate: updateTask } = useMutation({
+        mutationFn: async () => {
+            try {
+                await axios.put(
+                    `http://localhost:8000/tasks/${currentTask?._id}`,
+                    { ...currentTask, categories: taskCategories },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${cookies.get("token")}`,
+                        },
+                    }
+                );
+                setTaskCategories(currentTask.categories);
+                toast.success("Task updated successfully.");
+                refetchTasks();
+            } catch (err) {
+                toast.error("Something went wrong while updating your tasks.");
+                console.log(err);
+            }
+        },
+    });
 
     return (
         <Dialog>
@@ -89,23 +204,40 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Task</TableHead>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>Description</TableHead>
+                                    <TableHead>Categories</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Created at</TableHead>
-                                    <TableHead className="table-cell">
-                                        Due date
-                                    </TableHead>
+                                    <TableHead>Due date</TableHead>
                                     <TableHead>
                                         <span className="sr-only">Actions</span>
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {tasks.map((task: TaskType, idx) => {
+                                {filteredTasks.map((task: Task, idx) => {
                                     return (
                                         <TableRow key={idx}>
-                                            <TableCell className="font-medium">
+                                            <TableCell className="font-medium line-clamp-1 min-w-[150px] mt-2">
                                                 {task.name}
+                                            </TableCell>
+                                            <TableCell className="font-medium min-w-[150px]">
+                                                {task.description || "..."}
+                                            </TableCell>
+                                            <TableCell className="font-medium min-w-[150px]">
+                                                {task?.categories?.map(
+                                                    (category: any, idx) => (
+                                                        <Badge
+                                                            variant="outline"
+                                                            key={idx}
+                                                        >
+                                                            {category.name}
+                                                        </Badge>
+                                                    )
+                                                )}
+                                                {task?.categories?.length ===
+                                                    0 && <span>Nothing</span>}
                                             </TableCell>
                                             <TableCell>
                                                 <Badge
@@ -119,13 +251,13 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                                     {task.status}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="table-cell">
+                                            <TableCell className="table-cell min-w-[150px]">
                                                 {format(
-                                                    task.createdDate,
+                                                    task.createdAt,
                                                     "dd-MM-yyyy"
                                                 )}
                                             </TableCell>
-                                            <TableCell className="table-cell">
+                                            <TableCell className="table-cell min-w-[150px]">
                                                 {format(
                                                     task.dueDate,
                                                     "dd-MM-yyyy"
@@ -152,12 +284,24 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                                             Actions
                                                         </DropdownMenuLabel>
                                                         <DialogTrigger className="w-full">
-                                                            <DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    setCurrentTask(
+                                                                        task
+                                                                    );
+                                                                }}
+                                                            >
                                                                 Edit
                                                             </DropdownMenuItem>
                                                         </DialogTrigger>
                                                         <AlertDialogTrigger className="w-full">
-                                                            <DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() =>
+                                                                    setCurrentTask(
+                                                                        task
+                                                                    )
+                                                                }
+                                                            >
                                                                 Delete
                                                             </DropdownMenuItem>
                                                         </AlertDialogTrigger>
@@ -173,7 +317,8 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
 
                     <CardFooter>
                         <div className="text-xs text-muted-foreground">
-                            Showing <strong>{tasks.length}</strong> tasks
+                            Showing <strong>{filteredTasks.length}</strong>{" "}
+                            tasks
                         </div>
                     </CardFooter>
                 </Card>
@@ -188,7 +333,14 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <Button variant="destructive">Delete</Button>
+                        <AlertDialogAction className="bg-transparent hover:bg-transparent p-0 shadow-none">
+                            <Button
+                                variant="destructive"
+                                onClick={() => deleteTask()}
+                            >
+                                Delete
+                            </Button>
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -205,13 +357,96 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                         <Label htmlFor="name" className="text-right">
                             Task name
                         </Label>
-                        <Input id="name" className="col-span-3" />
+                        <Input
+                            id="name"
+                            className="col-span-3"
+                            value={currentTask?.name}
+                            onChange={(e) =>
+                                setCurrentTask({
+                                    ...currentTask,
+                                    name: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
+                    <div className="flex flex-col items-start gap-2">
+                        <Label htmlFor="name" className="text-right">
+                            Task description
+                        </Label>
+                        <Input
+                            id="description"
+                            className="col-span-3"
+                            value={currentTask?.description}
+                            onChange={(e) =>
+                                setCurrentTask({
+                                    ...currentTask,
+                                    description: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
+                    <div className="flex flex-col items-start gap-2">
+                        <Label htmlFor="category" className="text-right">
+                            Categories
+                        </Label>
+                        <div className="flex gap-2 flex-wrap">
+                            {categories?.data?.map(
+                                (category: any, idx: number) => (
+                                    <div
+                                        key={idx}
+                                        className="flex gap-1 items-center"
+                                    >
+                                        <Checkbox
+                                            id={category.name}
+                                            defaultChecked={currentTask?.categories
+                                                .map(
+                                                    (category: any) =>
+                                                        category._id
+                                                )
+                                                .includes(category._id)}
+                                            onCheckedChange={(value) => {
+                                                if (value) {
+                                                    // User checked the category
+                                                    setTaskCategories([
+                                                        ...taskCategories,
+                                                        category._id!,
+                                                    ]);
+                                                } else {
+                                                    // User unchecked the category
+                                                    setTaskCategories(
+                                                        taskCategories.filter(
+                                                            (cat) =>
+                                                                cat !==
+                                                                category._id
+                                                        )
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                        <label
+                                            htmlFor={category.name}
+                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            {category.name}
+                                        </label>
+                                    </div>
+                                )
+                            )}
+                        </div>
                     </div>
                     <div className="w-full flex items-center justify-between gap-2">
                         <Label htmlFor="state" className="text-right">
                             Status
                         </Label>
-                        <Select>
+                        <Select
+                            defaultValue={currentTask?.status}
+                            onValueChange={(value) =>
+                                setCurrentTask({
+                                    ...currentTask,
+                                    status: value,
+                                })
+                            }
+                        >
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Todo" />
                             </SelectTrigger>
@@ -238,12 +473,13 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                                     variant="outline"
                                     className={cn(
                                         "w-[180px] justify-start text-left font-normal",
-                                        !date && "text-muted-foreground"
+                                        !currentTask?.dueDate &&
+                                            "text-muted-foreground"
                                     )}
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? (
-                                        format(date, "PPP")
+                                    {currentTask?.dueDate ? (
+                                        format(currentTask?.dueDate, "PPP")
                                     ) : (
                                         <span>Pick a date</span>
                                     )}
@@ -255,20 +491,24 @@ function TasksTable({ tasks }: { tasks: TaskType[] }) {
                             >
                                 <Calendar
                                     mode="single"
-                                    selected={date}
-                                    onSelect={setDate}
+                                    selected={currentTask?.dueDate}
+                                    onSelect={(value) => {
+                                        setCurrentTask({
+                                            ...currentTask,
+                                            dueDate: value,
+                                        });
+                                    }}
                                     initialFocus
-                                    disabled={(date) =>
-                                        date > new Date() ||
-                                        date < new Date("1900-01-01")
-                                    }
+                                    disabled={(date) => date < new Date()}
                                 />
                             </PopoverContent>
                         </Popover>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button>Edit Task</Button>
+                    <DialogClose asChild>
+                        <Button onClick={() => updateTask()}>Edit Task</Button>
+                    </DialogClose>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

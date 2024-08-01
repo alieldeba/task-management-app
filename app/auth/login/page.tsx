@@ -20,12 +20,16 @@ import { useMutation } from "@tanstack/react-query";
 import Cookies from "universal-cookie";
 import { useRouter } from "next/navigation";
 import { ButtonLoading } from "@/components/ButtonLoading";
+import { setUser } from "@/app/GlobalRedux/Features/user/userSlice";
+import { useDispatch } from "react-redux";
 
 export default function Login() {
     const [email, setEmail] = React.useState<string>("");
     const [password, setPassword] = React.useState<string>("");
     const cookies = new Cookies();
     const router = useRouter();
+
+    const dispatch = useDispatch();
 
     const { mutate: login, isPending } = useMutation({
         mutationFn: async (e: Event) => {
@@ -45,6 +49,12 @@ export default function Login() {
                         expires: new Date(Date.now() + 86400000), // Expires after 1 day
                         path: "/",
                     });
+
+                    // Saving user to global state
+                    dispatch(setUser(res.data.user));
+                    // dispatch(setUserUsername(res.data.username));
+                    // dispatch(setUserEmail(res.data.email));
+                    // dispatch(setUserLinkedinURL(res.data.linkedinURL));
 
                     // Redirect to dashboard
                     router.replace("/dashboard");

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import ReactQueryProvider from "./ReactQueryProvider";
+import { Providers } from "./GlobalRedux/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,8 @@ export default function RootLayout({
         <html lang="en">
             <body className={inter.className}>
                 <ReactQueryProvider>
-                    {children} <Toaster />
+                    <Providers>{children}</Providers>
+                    <Toaster richColors />
                 </ReactQueryProvider>
             </body>
         </html>
